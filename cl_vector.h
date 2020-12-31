@@ -52,7 +52,6 @@
         vec->userdata = NULL;                                                 \
     }                                                                         \
                                                                               \
-                                                                              \
     void PREFIX##calldeleter(struct STRUCT_TAG *vec,                          \
                              int from,                                        \
                              int to)                                          \
@@ -60,7 +59,7 @@
         if (vec->deleter) {                                                   \
             int i;                                                            \
             for (i = from; i < to; ++i) {                                     \
-                (*vec->deleter)((ELEMENT_TYPE)(vec->data + i),                \
+                (*vec->deleter)(*(vec->data + i),                             \
                                 vec->userdata);                               \
             }                                                                 \
         }                                                                     \
@@ -99,10 +98,10 @@
     int PREFIX##compact(struct STRUCT_TAG* vec)                               \
     {                                                                         \
         ELEMENT_TYPE* ptr;                                                    \
-        vec->capacity = vec->size;                                            \
-        ptr = realloc(vec->data, sizeof(ELEMENT_TYPE) * vec->capacity);       \
+        ptr = realloc(vec->data, sizeof(ELEMENT_TYPE) * vec->size);           \
         if (!ptr)                                                             \
             return 0;                                                         \
+        vec->capacity = vec->size;                                            \
         vec->data = ptr;                                                      \
         return 1;                                                             \
     }                                                                         \
@@ -172,14 +171,7 @@
                                                                               \
     void PREFIX##clear(struct STRUCT_TAG *vec)                                \
     {                                                                         \
-        if (vec->deleter) {                                                   \
-            int i;                                                            \
-            for (i = 0; i < vec->size; ++i) {                                 \
-                (*vec->deleter)((ELEMENT_TYPE)(vec->data + i),                \
-                                vec->userdata);                               \
-            }                                                                 \
-        }                                                                     \
-                                                                              \
+        PREFIX##calldeleter(vec, 0, vec->size);                               \
         vec->size = 0;                                                        \
     }
 

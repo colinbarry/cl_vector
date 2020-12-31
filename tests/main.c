@@ -166,6 +166,7 @@ static struct TestObject *obj_new(int data, int *numobjs)
 static void obj_delete(struct TestObject *obj, void *ud)
 {
     (*(int*)ud)--;
+    free(obj);
 }
 
 DEF_TEST(deleter)
@@ -189,10 +190,16 @@ DEF_TEST(deleter)
     /* deleter must be called when one element is deleted. */
     oa_erase(&arr, 3);
     ASSERT(numobjs == 4);
+    ASSERT(oa_get(&arr, 0)->data == 2);
+    ASSERT(oa_get(&arr, 1)->data == 3);
+    ASSERT(oa_get(&arr, 2)->data == 5);
+    ASSERT(oa_get(&arr, 3)->data == 11);
 
     /* deleter must be called when multiple element are deleted. */
     oa_erasen(&arr, 1, 2);
     ASSERT(numobjs == 2);
+    ASSERT(oa_get(&arr, 0)->data == 2);
+    ASSERT(oa_get(&arr, 1)->data == 11);
 
     /* deleter must be called when an array is cleared  */
     oa_clear(&arr);
